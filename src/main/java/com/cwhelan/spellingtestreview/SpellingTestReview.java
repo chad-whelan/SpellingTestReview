@@ -1,48 +1,61 @@
 package com.cwhelan.spellingtestreview;
+import com.cwhelan.spellingtestreview.creation.CreateSpellingWords;
+import com.cwhelan.spellingtestreview.file.CSVWordFileReader;
+import com.cwhelan.spellingtestreview.model.SpellingWord;
+
 import java.util.*;
 
 /**
  * Created by chadwhelan on 1/13/15.
  */
-public class MainClass {
+public class SpellingTestReview extends Thread {
+
+    private String currentWordFild = "currentWords.csv";
+    private String randomWordFile = "randomWords.csv";
 
     public static void main(String[] args) {
-        MainClass main = new MainClass();
-        main.generateTest();
-//        main.testList();
+        new SpellingTestReview(args).start();
     }
 
-    private void testList() {
-        List<String> listWords = new ArrayList<>();
-        listWords.addAll(getCorrectTestWords());
+    private SpellingTestReview(String[] programArguments) {
 
-        List<String> misspelledWords = new ArrayList<>();
-        misspelledWords.addAll(getCorrectRandomWords());
+        if (programArguments != null && programArguments.length > 0) {
+            currentWordFild = programArguments[0];
 
-        System.out.println("duplicate words");
-        for (String s : listWords) {
-//            misspelledWords.remove(s);
-            if (misspelledWords.remove(s)) {
-                System.out.println(s);
+            if (programArguments.length > 1) {
+                randomWordFile = programArguments[1];
             }
+
         }
 
-//        for (String s : misspelledWords) {
-//            System.out.format("\"%s\", ", s);
-//        }
-
-
     }
+
+    public void run() {
+        generateTest();
+    }
+
+
     private void generateTest() {
-        List<String> listWords = new ArrayList<>();
-        listWords.addAll(getCorrectTestWords());
-        int rightWordChoices = 10;
+        List<SpellingWord> spellingWords = new ArrayList<>();
+        CreateSpellingWords currentSpellingWords = new CreateSpellingWords(currentWordFild);
+        List<SpellingWord> currentWordList = currentSpellingWords.getSpellingWords();
 
-        printRightSpellingWords(listWords, rightWordChoices);
-        printWrongSpellingWords(listWords, ++rightWordChoices);
+        int rightWordChoices = Math.round(currentWordList.size() * .2F);
 
-//        System.out.println("remaining word count: " + listWords.size());
+        for (SpellingWord word : currentSpellingWords.getSpellingWords()) {
+            System.out.println(word);
+        }
     }
+//    private void generateTest() {
+//        List<String> listWords = new ArrayList<>();
+//        listWords.addAll(getCorrectTestWords());
+//        int rightWordChoices = Math.round(listWords.size() * .2F);
+//
+//        printRightSpellingWords(listWords, rightWordChoices);
+//        printWrongSpellingWords(listWords, ++rightWordChoices);
+//
+////        System.out.println("remaining word count: " + listWords.size());
+//    }
 
     private void printRightSpellingWords(List<String> originalList, int stopAt) {
 
@@ -83,12 +96,17 @@ public class MainClass {
             questions.add(choices);
         }
 
-        printQuestion(nextQuestion, questions);
+        printQuestion(nextQuestion, questions, "__________");
 
     }
 
 
     private void printQuestion(int startAt, List<List<String>> questions) {
+        printQuestion(startAt, questions, null);
+    }
+
+
+    private void printQuestion(int startAt, List<List<String>> questions, String theLine) {
 
         for (List<String> question : questions) {
             List<String> choices = randomizeList(question);
@@ -100,12 +118,16 @@ public class MainClass {
                 System.out.print(",");
             }
 
+            if (theLine != null) {
+                System.out.print(theLine);
+            }
+
             System.out.println();
         }
     }
 
-    private <T> List<T> randomizeList(List<T> originalList) {
-        List<T> newList = new ArrayList<>();
+    private List randomizeList(List originalList) {
+        List newList = new ArrayList<>();
         while (originalList != null && !originalList.isEmpty()) {
             newList.add(removeRandomWord(originalList));
         }
@@ -125,14 +147,8 @@ public class MainClass {
     }
 
     private List<String> getCorrectTestWords() {
-        return Arrays.asList("let's", "he'd", "you'll", "can't", "I'd", "won't", "hasn't", "she'd", "they'll", "when's",
-                "we'd", "should've", "wasn't", "didn't", "haven't", "thumb", "gnaw", "written", "know", "climb", "design",
-                "wrist", "crumb", "assign", "wrench", "knot", "wrinkle", "lamb", "unhappy", "recall", "disappear", "unload",
-                "mistake", "misspell", "dislike", "replace", "mislead", "disagree", "rewrite", "unroll", "unknown", "dishonest",
-                "react", "knob", "knit", "clock", "large", "page", "mark", "kitten", "judge", "crack", "edge", "pocket",
-                "brake", "change", "ridge", "jacket", "badge", "first", "beautiful", "safely", "kindness", "finally",
-                "spotless", "worthless", "illness", "helpful", "daily", "suddenly", "wireless", "quietly", "fairness",
-                "cheerful", "painful");
+        return Arrays.asList("wolves","women","geese","knew","knives","sheep","wives","know","feet","heroes","elves","instead",
+                "men","scarves","banjos","letter","children","mice","halves","library","I like zoos.");
     }
 
     private Map<String, String> getMisspelledTestWords() {
@@ -226,7 +242,12 @@ public class MainClass {
                 "ur", "peple", "prety", "recieved", "runing", "siad", "schole", "someting", "sometims",
                 "statred", "stoped", "stoopped", "surpise", "swiming", "thaan", "tha's", "thier", "tthen", "tehre", "htey", "the're",
                 "thinngs", "thout", "threwe", "throgh", "togeter", "ttoo", "tooo", "tryed", "ttwo", "untill", "veary", "viry", "wated",
-                "wint", "weere","weire",  "whin", "wherre", "wih", "womans", "wold", "you'e");
+                "wint", "weere","weire",  "whin", "wherre", "wih", "womans", "wold", "you'e", "hee'd","you'l", "cna't", "hassn't",
+                "the'll","shold've", "was't", "dind't", "havn't","knaw","writen", "knwo", "clim", "disign", "wist", "crum","asign",
+                "wrinch", "nkot","rinkle", "lam","unhapy","recal","dissappear","unlod","misstake","mispell","disslike","repalce",
+                "mislaed","disagre","rerite", "unrol","unnown","dishonist","raect","cloc","larg","pag","kiten","crac","poket","braek",
+                "chang", "jackit","badg", "fisrt", "beautifull", "safly", "kindnes", "finaly","spotliss", "worthles","ilness",
+                "heplful", "daly","sudenly", "wirless", "quitly","fareness", "cherful", "pinfull");
     }
 
     private List<String> getCorrectRandomWords() {
@@ -252,6 +273,13 @@ public class MainClass {
                 "then", "there", "they", "they're", "things", "thought", "thousand", "three", "threw", "thrill", "throne",
                 "through", "throw", "thrown", "Thursday", "to", "together", "too", "toothbrush", "tried", "trophy", "trouble",
                 "Tuesday", "tulip", "two", "uncle", "until", "using", "very", "voyage", "wagon", "wanted", "watch", "weather",
-                "Wednesday", "went", "were", "when", "where", "window", "wishes", "with", "woman", "worried", "would", "you're");
+                "Wednesday", "went", "were", "when", "where", "window", "wishes", "with", "woman", "worried", "would", "you're",
+                "let's", "he'd", "you'll", "can't", "I'd", "won't", "hasn't", "she'd", "they'll", "when's", "we'd", "should've",
+                "wasn't", "didn't", "haven't", "thumb", "gnaw", "written", "know", "climb", "design", "wrist", "crumb", "assign",
+                "wrench", "knot", "wrinkle", "lamb", "unhappy", "recall", "disappear", "unload", "mistake", "misspell", "dislike",
+                "replace", "mislead", "disagree", "rewrite", "unroll", "unknown", "dishonest", "react", "knob", "knit", "clock",
+                "large", "page", "mark", "kitten", "judge", "crack", "edge", "pocket", "brake", "change", "ridge", "jacket",
+                "badge", "first", "beautiful", "safely", "kindness", "finally", "spotless", "worthless", "illness", "helpful",
+                "daily", "suddenly", "wireless", "quietly", "fairness", "cheerful", "painful");
     }
 }
